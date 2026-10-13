@@ -1,0 +1,55 @@
+SELECT * FROM `dosen` WHERE spesialisasi = "Basis Data";
+SELECT * FROM `dosen` WHERE nidn = 0319059004;
+SELECT * FROM `dosen` WHERE nama_dosen = "Maya Anggraini, M.Kom";
+-----------------------------------------
+SELECT * FROM `mahasiswa` WHERE IPK > 3.5;
+SELECT * FROM `mahasiswa` WHERE IPK = 3.75;
+SELECT * FROM `mahasiswa` WHERE IPK < 3.5;
+------------------------------------------
+SELECT * FROM `mahasiswa` WHERE nim IN (2301003,2301002);
+SELECT * FROM `mahasiswa` WHERE nama IN ("Hana Safitri", "Galih Ramadhan");
+SELECT * FROM `mahasiswa` WHERE ipk IN (3.9, 3.4);
+-------------------------------------------
+SELECT UPPER(nama) FROM `mahasiswa`;
+SELECT LOWER(spesialisasi) FROM `dosen`;
+SELECT CONCAT(nidn, ' - ', nama_dosen) AS NIDN_Dosen FROM `dosen` ;
+SELECT CONCAT(nim, ' - ', nama) AS NIM_Nama FROM `mahasiswa`;
+SELECT LEFT('2601234567', 2) AS angkatan;
+SELECT RIGHT('2601234567', 4) AS nomor_urut;
+SELECT LENGTH('Basis Data') AS panjang_karakter;
+---------------------------------------------
+SELECT NOW() AS waktu_sekarang, CURDATE() AS tanggal_sekarang;
+---------------------------------------------
+SELECT 
+    nama, 
+    tanggal_lahir,
+    YEAR(tanggal_lahir) AS tahun_lahir,
+    MONTH(tanggal_lahir) AS bulan_lahir,
+    DAY(tanggal_lahir) AS hari_lahir,
+    DAYNAME(tanggal_lahir) AS nama_hari
+	
+FROM mahasiswa;
+----------------------------------------------
+SELECT nama, tanggal_lahir 
+FROM mahasiswa 
+WHERE YEAR(tanggal_lahir) = 2005;
+----------------------------------------------
+SELECT nama, tanggal_lahir 
+FROM mahasiswa 
+WHERE YEAR(tanggal_lahir) > 2005;
+-----------------------------------------------
+SELECT nama, tanggal_lahir 
+FROM mahasiswa 
+WHERE YEAR(tanggal_lahir) < 2005;
+----------------------------------------------
+SELECT 
+    nama, 
+    tanggal_lahir,
+    DATEDIFF(CURDATE(), tanggal_lahir) AS umur_dalam_hari
+FROM mahasiswa;
+----------------------------------------------
+SELECT 
+    nama, 
+    FLOOR(DATEDIFF(CURDATE(), tanggal_lahir) / 365) AS umur_tahun
+FROM mahasiswa;
+
