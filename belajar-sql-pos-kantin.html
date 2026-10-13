@@ -170,6 +170,8 @@
     .answer-btn { padding: 8px 12px; border: 0; border-radius: 9px; color: white; background: var(--navy); font-weight: 800; cursor: pointer; }
     .answer { display: none; margin-top: 12px; padding: 12px; border-radius: 10px; color: #155c52; background: #eaf8f5; font-size: .85rem; }
     .answer.show { display: block; }
+    .answer pre { margin-top: 8px; padding: 14px 16px; border-radius: 10px; background: var(--code); font-size: .8rem; }
+    .quiz-topic { display: inline-block; margin-bottom: 8px; padding: 3px 8px; border-radius: 999px; color: var(--navy); background: var(--yellow); font-size: .62rem; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
 
     .checklist { margin: 16px 0 0; padding: 0; list-style: none; }
     .checklist li { position: relative; margin: 8px 0; padding-left: 28px; }
@@ -504,10 +506,35 @@ ORDER BY sale_time;</code></pre></div>
         <section class="lesson" id="latihan">
           <div class="lesson-head"><span class="lesson-number">07</span><div><h2>Uji pemahaman</h2><p class="lesson-intro">Coba tulis query sendiri sebelum membuka jawabannya.</p></div></div>
 
-          <article class="quiz-card"><p>1. Harga “Kopi Susu” berubah menjadi Rp9.000. Query apa yang digunakan?</p><button class="answer-btn" type="button">Lihat jawaban</button><div class="answer"><code>UPDATE products SET price = 9000.00 WHERE product_code = 'MNM-002';</code></div></article>
-          <article class="quiz-card"><p>2. Bagaimana menonaktifkan “Pisang Goreng” tanpa menghapus riwayatnya?</p><button class="answer-btn" type="button">Lihat jawaban</button><div class="answer"><code>UPDATE products SET is_active = FALSE WHERE product_code = 'SNK-002';</code></div></article>
-          <article class="quiz-card"><p>3. Kapan ROLLBACK digunakan dalam proses pembayaran?</p><button class="answer-btn" type="button">Lihat jawaban</button><div class="answer">Gunakan <code>ROLLBACK</code> jika salah satu langkah gagal—misalnya stok tidak cukup atau INSERT detail penjualan error—agar header penjualan dan perubahan stok tidak tersimpan sebagian.</div></article>
-          <article class="quiz-card"><p>4. Mengapa query <code>LIKE '%Teh%'</code> kurang ideal untuk B-tree index biasa?</p><button class="answer-btn" type="button">Lihat jawaban</button><div class="answer">Karena wildcard berada di awal. Database tidak memiliki awalan pasti untuk melakukan pencarian terarah pada B-tree dan sering harus memindai lebih banyak baris.</div></article>
+          <article class="quiz-card"><span class="quiz-topic">01 · UPDATE</span><p>1. Harga “Kopi Susu” berubah menjadi Rp9.000. Query apa yang digunakan?</p><button class="answer-btn" type="button">Lihat jawaban</button><div class="answer"><code>UPDATE products SET price = 9000.00 WHERE product_code = 'MNM-002';</code></div></article>
+          <article class="quiz-card"><span class="quiz-topic">02 · Soft delete</span><p>2. Bagaimana menonaktifkan “Pisang Goreng” tanpa menghapus riwayatnya?</p><button class="answer-btn" type="button">Lihat jawaban</button><div class="answer"><code>UPDATE products SET is_active = FALSE WHERE product_code = 'SNK-002';</code></div></article>
+          <article class="quiz-card"><span class="quiz-topic">03 · Transaction</span><p>3. Kapan ROLLBACK digunakan dalam proses pembayaran?</p><button class="answer-btn" type="button">Lihat jawaban</button><div class="answer">Gunakan <code>ROLLBACK</code> jika salah satu langkah gagal—misalnya stok tidak cukup atau INSERT detail penjualan error—agar header penjualan dan perubahan stok tidak tersimpan sebagian.</div></article>
+          <article class="quiz-card"><span class="quiz-topic">05 · INDEX</span><p>4. Mengapa query <code>LIKE '%Teh%'</code> kurang ideal untuk B-tree index biasa?</p><button class="answer-btn" type="button">Lihat jawaban</button><div class="answer">Karena wildcard berada di awal. Database tidak memiliki awalan pasti untuk melakukan pencarian terarah pada B-tree dan sering harus memindai lebih banyak baris.</div></article>
+
+          <article class="quiz-card"><span class="quiz-topic">00 · Studi kasus</span><p>5. Mengapa POS kantin memerlukan tabel <code>sale_items</code>? Mengapa produk tidak langsung disimpan di tabel <code>sales</code>?</p><button class="answer-btn" type="button">Lihat jawaban</button><div class="answer">Satu transaksi dapat berisi banyak produk, dan satu produk dapat muncul di banyak transaksi. Hubungan <code>sales</code>–<code>products</code> bersifat many-to-many sehingga dipecah melalui <code>sale_items</code> (sales 1 ─ N sale_items N ─ 1 products). Tabel ini juga menyimpan <code>quantity</code> dan <code>unit_price</code> saat transaksi terjadi, sehingga laporan lama tidak berubah ketika harga produk dinaikkan.</div></article>
+          <article class="quiz-card"><span class="quiz-topic">02 · DELETE</span><p>6. Hapus transaksi dengan <code>sale_id = 4</code> hanya jika statusnya <code>'VOID'</code>. Apa yang terjadi pada baris di <code>sale_items</code> milik transaksi tersebut?</p><button class="answer-btn" type="button">Lihat jawaban</button><div class="answer">Preview dahulu, lalu hapus dengan kondisi yang sama:
+<pre><code>SELECT sale_id, invoice_no, status
+FROM sales
+WHERE sale_id = 4 AND status = 'VOID';
+
+DELETE FROM sales
+WHERE sale_id = 4 AND status = 'VOID';</code></pre>
+Detail di <code>sale_items</code> ikut terhapus otomatis karena foreign key <code>sale_items.sale_id</code> memakai <code>ON DELETE CASCADE</code>. Jika status bukan VOID, tidak ada baris yang terhapus.</div></article>
+          <article class="quiz-card"><span class="quiz-topic">03 · Transaction</span><p>7. Dalam checkout, query <code>UPDATE products SET stock = stock - @qty WHERE product_id = @product_id AND stock &gt;= @qty;</code> menghasilkan <code>ROW_COUNT() = 0</code>. Apa artinya dan apa yang harus dilakukan?</p><button class="answer-btn" type="button">Lihat jawaban</button><div class="answer">Artinya tidak ada baris yang berubah karena stok tidak mencukupi (atau produk tidak ditemukan). Jalankan <code>ROLLBACK;</code> dan jangan lanjutkan INSERT ke <code>sales</code> maupun <code>sale_items</code>. Dengan begitu, tidak ada penjualan yang tercatat tanpa stok yang benar-benar berkurang.</div></article>
+          <article class="quiz-card"><span class="quiz-topic">04 · ALTER TABLE</span><p>8. Pada <code>products_practice</code>: (a) ubah panjang <code>product_name</code> menjadi <code>VARCHAR(200)</code> tanpa mengganti nama, lalu (b) ganti nama kolom <code>stock</code> menjadi <code>current_stock</code>. Perintah apa yang tepat untuk masing-masing?</p><button class="answer-btn" type="button">Lihat jawaban</button><div class="answer">(a) Gunakan <code>MODIFY COLUMN</code> karena hanya definisinya yang berubah. (b) Gunakan <code>CHANGE COLUMN</code> karena nama kolom berubah; definisi lengkapnya tetap harus ditulis.
+<pre><code>ALTER TABLE products_practice
+MODIFY COLUMN product_name VARCHAR(200) NOT NULL;
+
+ALTER TABLE products_practice
+CHANGE COLUMN stock current_stock INT UNSIGNED NOT NULL DEFAULT 0;</code></pre>
+Sesuaikan tipe <code>current_stock</code> dengan tipe asli kolom <code>stock</code> (periksa melalui <code>DESCRIBE products_practice;</code>). Jika kolom sudah berganti nama pada contoh sebelumnya, jalankan dahulu query <em>Reset tabel latihan</em>.</div></article>
+          <article class="quiz-card"><span class="quiz-topic">06 · Impor database</span><p>9. Setelah mengimpor <code>kantin_pos.sql</code> melalui terminal, query apa saja yang dipakai untuk memastikan impor berhasil?</p><button class="answer-btn" type="button">Lihat jawaban</button><div class="answer">Impor dengan <code>mysql -u root -p &lt; kantin_pos.sql</code>, lalu verifikasi:
+<pre><code>USE kantin_pos;
+SHOW TABLES;
+SELECT COUNT(*) FROM products;   -- harus 8 produk
+SELECT * FROM v_ringkasan_penjualan
+ORDER BY sale_time;</code></pre>
+Jika tabel, data contoh, dan view tampil, berarti schema, relasi, dan data sudah masuk dengan benar.</div></article>
         </section>
       </div>
     </div>
