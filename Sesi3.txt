@@ -1,0 +1,69 @@
+UPDATE & DELETE
+
+Update -> mengubah data di suatu table
+
+Syntax:
+UPDATE [table_name]
+SET column_name = new_value
+[,column_name2 = new_value2]
+[WHERE conditions]
+
+Delete -> menghapus data pada suatu table
+
+Syntax:
+DELETE FROM [table_name]
+[WHERE conditions]
+
+# Transaction
+# satu grup query seperti insert update delete yang berjalan secara berurutan. Transaction itu bisa dibatalkan /
+disetujui.
+
+BEGIN;
+# ROLLBACK
+INSERT INTO films VALUES (1, "Avengers", "Thanos is Comming", 30000, 3.15, "2022-01-01");
+
+ROLLBACK;
+# COMMIT
+
+I
+
+
+# change column name and data type
+ALTER TABLE films
+CHANGE filmId film_id INT;
+# rename multiple column name
+ALTER TABLE films
+CHANGE filmDescription film_description INT,
+CHANGE filmName film_name INT;
+# change data type specific column
+ALTER TABLE films
+MODIFY COLUMN film_name VARCHAR(50)
+# add column
+ALTER TABLE films
+ADD filmEmail VARCHAR(50)
+# drop column
+ALTER TABLE films
+DROP COLUMN filmEmail
+# add constraint
+ALTER TABLE films
+ADD CONSTRAINT 'film_name_unique'
+UNIQUE (film_name)
+
+# DROP CONSTRAINT
+ALTER TABLE films
+DROR CONSIBATNT film_name unique
+
+#INDEX
+SELECT * FROM films
+WHERE title LIKE '%The First Ave%';
+
+CREATE INDEX film_index
+ON films(title);
+
+SELECT * FROM films
+WHERE title LIKE '%The First Ave%';
+
+#DROP INDEX
+ALTER TABLE films
+DROP INDEX film_index
+I

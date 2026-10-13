@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Modul interaktif belajar SQL UPDATE, DELETE, transaction, ALTER TABLE, dan INDEX dengan studi kasus POS kantin.">
+  <title>SQL Lab — POS Kantin</title>
+  <style>
+    :root {
+      --navy: #14213d;
+      --navy-2: #1d2f57;
+      --cream: #fff8e8;
+      --paper: #fffdf7;
+      --orange: #ff8a3d;
+      --yellow: #ffd166;
+      --mint: #78d6c6;
+      --red: #e85d5d;
+      --green: #21867a;
+      --ink: #1c2738;
+      --muted: #667085;
+      --line: #e4dfd2;
+      --code: #101828;
+      --shadow: 0 20px 55px rgba(20, 33, 61, .12);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 84px; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 8% 5%, rgba(255, 209, 102, .28), transparent 24rem),
+        radial-gradient(circle at 95% 25%, rgba(120, 214, 198, .22), transparent 22rem),
+        var(--cream);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.65;
+    }
+
+    button, a { -webkit-tap-highlight-color: transparent; }
+    a { color: inherit; }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      min-height: 66px;
+      padding: 10px max(20px, calc((100vw - 1280px) / 2));
+      color: white;
+      background: rgba(20, 33, 61, .96);
+      border-bottom: 1px solid rgba(255,255,255,.12);
+      backdrop-filter: blur(12px);
+    }
+
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 900; letter-spacing: -.03em; text-decoration: none; }
+    .brand-mark { display: grid; place-items: center; width: 35px; height: 35px; border-radius: 10px; color: var(--navy); background: var(--yellow); box-shadow: 3px 3px 0 var(--orange); }
+    .top-links { display: flex; align-items: center; gap: 18px; font-size: .82rem; font-weight: 750; }
+    .top-links a { color: rgba(255,255,255,.75); text-decoration: none; }
+    .top-links a:hover { color: var(--yellow); }
+
+    .page { width: min(1280px, calc(100% - 32px)); margin: 0 auto; padding: 30px 0 60px; }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 1.35fr .65fr;
+      gap: 40px;
+      align-items: end;
+      padding: clamp(32px, 6vw, 72px);
+      border-radius: 30px;
+      color: white;
+      background: var(--navy);
+      box-shadow: var(--shadow);
+    }
+
+    .hero::before {
+      content: "SQL";
+      position: absolute;
+      right: -10px;
+      top: -78px;
+      color: rgba(255,255,255,.035);
+      font: 900 18rem/1 Georgia, serif;
+      pointer-events: none;
+    }
+
+    .kicker { margin: 0 0 18px; color: var(--mint); font-size: .75rem; font-weight: 900; letter-spacing: .16em; text-transform: uppercase; }
+    h1, h2, h3 { line-height: 1.13; }
+    h1 { max-width: 800px; margin: 0; font: 500 clamp(2.8rem, 6vw, 5.8rem)/.98 Georgia, "Times New Roman", serif; letter-spacing: -.055em; }
+    h1 em { color: var(--yellow); font-weight: 500; }
+    .hero-copy { max-width: 720px; margin: 24px 0 0; color: rgba(255,255,255,.72); font-size: 1.05rem; }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 11px; margin-top: 28px; }
+    .button { display: inline-flex; align-items: center; justify-content: center; min-height: 46px; padding: 0 18px; border: 1px solid transparent; border-radius: 12px; font-size: .86rem; font-weight: 900; text-decoration: none; transition: .16s ease; cursor: pointer; }
+    .button:hover { transform: translateY(-2px); }
+    .button-primary { color: var(--navy); background: var(--yellow); }
+    .button-secondary { color: white; border-color: rgba(255,255,255,.25); background: rgba(255,255,255,.06); }
+
+    .hero-panel { position: relative; z-index: 1; padding: 22px; border: 1px solid rgba(255,255,255,.15); border-radius: 20px; background: rgba(255,255,255,.07); backdrop-filter: blur(8px); }
+    .hero-panel > span { color: var(--yellow); font-size: .68rem; font-weight: 900; letter-spacing: .13em; text-transform: uppercase; }
+    .learning-list { margin: 16px 0 0; padding: 0; list-style: none; }
+    .learning-list li { display: flex; gap: 10px; padding: 9px 0; border-top: 1px solid rgba(255,255,255,.1); color: rgba(255,255,255,.83); font-size: .86rem; }
+    .learning-list b { color: var(--mint); }
+
+    .notice { display: flex; gap: 14px; margin: 22px 0; padding: 17px 19px; border: 1px solid #f2ce77; border-radius: 16px; background: #fff4cf; }
+    .notice-icon { flex: 0 0 auto; display: grid; place-items: center; width: 31px; height: 31px; border-radius: 50%; color: white; background: var(--orange); font-weight: 900; }
+    .notice strong { display: block; margin-bottom: 2px; }
+    .notice p { margin: 0; color: #685223; font-size: .88rem; }
+
+    .layout { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 24px; align-items: start; }
+    .sidebar { position: sticky; top: 88px; padding: 18px; border: 1px solid var(--line); border-radius: 18px; background: rgba(255,253,247,.88); box-shadow: 0 10px 30px rgba(20,33,61,.05); }
+    .sidebar-label { margin: 0 0 10px; color: var(--muted); font-size: .68rem; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }
+    .sidebar a { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 9px; color: var(--muted); font-size: .83rem; font-weight: 750; text-decoration: none; }
+    .sidebar a:hover { color: var(--navy); background: #f3eedf; }
+    .nav-number { color: var(--orange); font-size: .7rem; font-weight: 900; }
+
+    .content { min-width: 0; }
+    .lesson { margin-bottom: 22px; padding: clamp(22px, 4vw, 38px); border: 1px solid var(--line); border-radius: 24px; background: rgba(255,253,247,.94); box-shadow: 0 12px 35px rgba(20,33,61,.055); }
+    .lesson-head { display: flex; gap: 16px; align-items: flex-start; margin-bottom: 24px; }
+    .lesson-number { flex: 0 0 auto; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 14px; color: white; background: var(--orange); font-weight: 950; box-shadow: 4px 4px 0 var(--yellow); }
+    .lesson h2 { margin: 0; color: var(--navy); font: 500 clamp(1.7rem, 3vw, 2.5rem)/1.1 Georgia, serif; letter-spacing: -.035em; }
+    .lesson-intro { margin: 7px 0 0; color: var(--muted); }
+    .lesson h3 { margin: 28px 0 9px; color: var(--navy); font-size: 1.02rem; }
+    .lesson p { margin: 8px 0; }
+
+    .syntax { margin: 18px 0; padding: 16px 18px; border-left: 4px solid var(--mint); border-radius: 0 12px 12px 0; background: #eaf8f5; }
+    .syntax strong { color: var(--green); font-size: .73rem; letter-spacing: .1em; text-transform: uppercase; }
+
+    .code-shell { position: relative; overflow: hidden; margin: 12px 0 20px; border: 1px solid #283752; border-radius: 15px; background: var(--code); }
+    .code-top { display: flex; align-items: center; justify-content: space-between; min-height: 42px; padding: 0 10px 0 16px; border-bottom: 1px solid rgba(255,255,255,.08); color: #98a2b3; background: #172138; font-size: .7rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    .copy-btn { padding: 6px 10px; border: 1px solid rgba(255,255,255,.13); border-radius: 8px; color: #d0d5dd; background: transparent; font-size: .68rem; font-weight: 850; cursor: pointer; }
+    .copy-btn:hover { color: var(--yellow); border-color: var(--yellow); }
+    pre { overflow-x: auto; margin: 0; padding: 19px; color: #e6edf7; font: 500 .84rem/1.7 "SFMono-Regular", Consolas, "Liberation Mono", monospace; tab-size: 2; }
+    .sql-keyword { color: #ff9d76; }
+    .sql-comment { color: #8290a9; }
+
+    .case-grid, .schema-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .case-card { padding: 18px; border: 1px solid var(--line); border-radius: 16px; background: white; }
+    .case-card .tag { display: inline-block; margin-bottom: 12px; padding: 4px 8px; border-radius: 999px; color: var(--navy); background: var(--yellow); font-size: .65rem; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+    .case-card h3 { margin: 0 0 6px; font-size: .96rem; }
+    .case-card p { margin: 0; color: var(--muted); font-size: .82rem; }
+
+    .schema-card { padding: 18px; border-radius: 16px; color: white; background: var(--navy-2); }
+    .schema-card span { color: var(--mint); font: 850 .8rem monospace; }
+    .schema-card h3 { margin: 8px 0; color: white; }
+    .schema-card p { margin: 0; color: rgba(255,255,255,.65); font-size: .8rem; }
+
+    .flow { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin: 18px 0; }
+    .flow-step { position: relative; padding: 15px 10px; border-radius: 12px; color: var(--navy); background: #edf8f6; text-align: center; font-size: .75rem; font-weight: 850; }
+    .flow-step:not(:last-child)::after { content: "→"; position: absolute; z-index: 2; right: -9px; color: var(--orange); font-size: 1rem; }
+
+    .comparison { overflow-x: auto; margin-top: 16px; border: 1px solid var(--line); border-radius: 14px; }
+    table { width: 100%; border-collapse: collapse; min-width: 620px; background: white; }
+    th { padding: 12px 14px; color: white; background: var(--navy); font-size: .72rem; text-align: left; letter-spacing: .06em; text-transform: uppercase; }
+    td { padding: 13px 14px; border-bottom: 1px solid var(--line); font-size: .82rem; vertical-align: top; }
+    tr:last-child td { border-bottom: 0; }
+    td code { color: var(--green); font-weight: 800; }
+
+    .danger { margin: 16px 0; padding: 15px 17px; border: 1px solid #f2b5b5; border-radius: 13px; color: #7c2f2f; background: #fff0f0; font-size: .87rem; }
+    .tip { margin: 16px 0; padding: 15px 17px; border: 1px solid #9eddd4; border-radius: 13px; color: #155c52; background: #ebfaf7; font-size: .87rem; }
+    .danger strong, .tip strong { display: block; margin-bottom: 3px; }
+
+    .terminal { margin-top: 16px; padding: 18px; border-radius: 14px; color: #d8dee9; background: #202838; font: .82rem/1.7 monospace; }
+    .terminal .prompt { color: var(--mint); }
+
+    .quiz-card { margin: 13px 0; padding: 18px; border: 1px solid var(--line); border-radius: 15px; background: white; }
+    .quiz-card p { margin: 0 0 12px; font-weight: 750; }
+    .answer-btn { padding: 8px 12px; border: 0; border-radius: 9px; color: white; background: var(--navy); font-weight: 800; cursor: pointer; }
+    .answer { display: none; margin-top: 12px; padding: 12px; border-radius: 10px; color: #155c52; background: #eaf8f5; font-size: .85rem; }
+    .answer.show { display: block; }
+
+    .checklist { margin: 16px 0 0; padding: 0; list-style: none; }
+    .checklist li { position: relative; margin: 8px 0; padding-left: 28px; }
+    .checklist li::before { content: "✓"; position: absolute; left: 0; top: 1px; display: grid; place-items: center; width: 19px; height: 19px; border-radius: 50%; color: white; background: var(--green); font-size: .7rem; font-weight: 900; }
+
+    footer { display: flex; justify-content: space-between; gap: 20px; padding: 10px 4px 0 278px; color: var(--muted); font-size: .78rem; }
+
+    @media (max-width: 950px) {
+      .hero { grid-template-columns: 1fr; }
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { position: static; display: flex; overflow-x: auto; gap: 4px; white-space: nowrap; }
+      .sidebar-label { display: none; }
+      .sidebar a { flex: 0 0 auto; }
+      footer { padding-left: 4px; }
+    }
+
+    @media (max-width: 720px) {
+      .top-links a:not(.download-link) { display: none; }
+      .page { width: min(100% - 20px, 1280px); padding-top: 14px; }
+      .hero { padding: 28px 22px; border-radius: 22px; }
+      .case-grid, .schema-grid { grid-template-columns: 1fr; }
+      .flow { grid-template-columns: 1fr; }
+      .flow-step:not(:last-child)::after { content: "↓"; right: 50%; bottom: -13px; top: auto; }
+      .lesson { padding: 20px 16px; border-radius: 19px; }
+      .lesson-head { gap: 12px; }
+      footer { flex-direction: column; }
+    }
+
+    @media print {
+      .topbar, .sidebar, .hero-actions, .copy-btn, .answer-btn { display: none !important; }
+      body { background: white; }
+      .page { width: 100%; padding: 0; }
+      .hero { border-radius: 0; box-shadow: none; }
+      .layout { grid-template-columns: 1fr; }
+      .lesson { break-inside: avoid; box-shadow: none; }
+      .answer { display: block; }
+      footer { padding-left: 0; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#top"><span class="brand-mark">&gt;_</span><span>SQL Lab Kantin</span></a>
+    <nav class="top-links" aria-label="Navigasi utama">
+      <a href="#database">Database</a>
+      <a href="#latihan">Latihan</a>
+      <a class="download-link button button-primary" href="kantin_pos.sql" download>↓ Unduh Database</a>
+    </nav>
+  </header>
+
+  <main class="page" id="top">
+    <section class="hero">
+      <div>
+        <p class="kicker">Modul interaktif · MySQL 8+</p>
+        <h1>Belajar SQL lewat <em>POS Kantin.</em></h1>
+        <p class="hero-copy">Pahami UPDATE, DELETE, transaction, ALTER TABLE, dan INDEX melalui alur pembayaran nyata—dari memperbarui harga hingga menjaga stok agar tidak berantakan.</p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="#database">Mulai belajar</a>
+          <a class="button button-secondary" href="kantin_pos.sql" download>Unduh kantin_pos.sql</a>
+        </div>
+      </div>
+      <aside class="hero-panel" aria-label="Target pembelajaran">
+        <span>Setelah modul ini</span>
+        <ul class="learning-list">
+          <li><b>01</b> Mengubah dan menghapus data dengan aman</li>
+          <li><b>02</b> Menjaga konsistensi transaksi pembayaran</li>
+          <li><b>03</b> Mengubah struktur tabel dengan benar</li>
+          <li><b>04</b> Memilih indeks yang berguna</li>
+        </ul>
+      </aside>
+    </section>
+
+    <div class="notice" role="note">
+      <span class="notice-icon">!</span>
+      <div><strong>Catatan sintaks</strong><p>Semua query pada modul ini menggunakan MySQL 8+. String SQL memakai tanda kutip tunggal, misalnya <code>'Nasi Goreng'</code>. Selalu uji <code>WHERE</code> dengan <code>SELECT</code> sebelum menjalankan UPDATE atau DELETE.</p></div>
+    </div>
+
+    <div class="layout">
+      <nav class="sidebar" aria-label="Daftar materi">
+        <p class="sidebar-label">Daftar materi</p>
+        <a href="#database"><span class="nav-number">00</span> Studi kasus</a>
+        <a href="#update"><span class="nav-number">01</span> UPDATE</a>
+        <a href="#delete"><span class="nav-number">02</span> DELETE</a>
+        <a href="#transaction"><span class="nav-number">03</span> Transaction</a>
+        <a href="#alter"><span class="nav-number">04</span> ALTER TABLE</a>
+        <a href="#index"><span class="nav-number">05</span> INDEX</a>
+        <a href="#import"><span class="nav-number">06</span> Impor database</a>
+        <a href="#latihan"><span class="nav-number">07</span> Latihan</a>
+      </nav>
+
+      <div class="content">
+        <section class="lesson" id="database">
+          <div class="lesson-head"><span class="lesson-number">00</span><div><h2>Studi kasus POS kantin</h2><p class="lesson-intro">POS (Point of Sale) mencatat produk, kasir, transaksi, dan detail barang yang dibeli.</p></div></div>
+          <div class="schema-grid">
+            <article class="schema-card"><span>MASTER</span><h3>products</h3><p>Kode, nama, harga, stok, kategori, dan status produk.</p></article>
+            <article class="schema-card"><span>HEADER</span><h3>sales</h3><p>Nomor invoice, kasir, total, metode bayar, dan status.</p></article>
+            <article class="schema-card"><span>DETAIL</span><h3>sale_items</h3><p>Produk, jumlah, harga satuan, dan subtotal per baris.</p></article>
+          </div>
+          <h3>Relasi sederhananya</h3>
+          <div class="code-shell"><div class="code-top"><span>Entity relationship</span></div><pre><code>categories  1 ─── N  products
+cashiers    1 ─── N  sales
+sales       1 ─── N  sale_items  N ─── 1  products</code></pre></div>
+          <p>Contoh data awal menyediakan delapan produk, dua kasir, empat transaksi, dan sebuah view laporan bernama <code>v_ringkasan_penjualan</code>.</p>
+        </section>
+
+        <section class="lesson" id="update">
+          <div class="lesson-head"><span class="lesson-number">01</span><div><h2>UPDATE — mengubah data</h2><p class="lesson-intro">Digunakan ketika baris sudah ada, tetapi satu atau beberapa nilainya perlu diperbarui.</p></div></div>
+          <div class="syntax"><strong>Pola dasar</strong><div class="code-shell"><div class="code-top"><span>SQL</span></div><pre><code>UPDATE nama_tabel
+SET kolom_1 = nilai_baru,
+    kolom_2 = nilai_baru
+WHERE kondisi;</code></pre></div></div>
+
+          <h3>Kasus 1 — harga Nasi Goreng naik menjadi Rp16.000</h3>
+          <p>Periksa dahulu baris yang akan berubah, lalu jalankan UPDATE dengan primary key.</p>
+          <div class="code-shell"><div class="code-top"><span>Preview + update</span></div><pre><code>SELECT product_id, product_name, price
+FROM products
+WHERE product_id = 1;
+
+UPDATE products
+SET price = 16000.00
+WHERE product_id = 1;</code></pre></div>
+
+          <h3>Kasus 2 — stok bertambah setelah belanja bahan</h3>
+          <div class="code-shell"><div class="code-top"><span>Nilai relatif</span></div><pre><code>UPDATE products
+SET stock = stock + 10
+WHERE product_code = 'MNM-003';</code></pre></div>
+
+          <h3>Kasus 3 — ubah beberapa kolom sekaligus</h3>
+          <div class="code-shell"><div class="code-top"><span>Multiple columns</span></div><pre><code>UPDATE products
+SET product_name = 'Es Teh Lemon',
+    product_description = 'Teh dingin dengan lemon segar',
+    price = 7000.00
+WHERE product_code = 'MNM-001';</code></pre></div>
+
+          <div class="danger"><strong>Jangan lupa WHERE.</strong><code>UPDATE products SET price = 16000;</code> akan mengubah harga seluruh produk. Jika memang ingin mass update, tulis dan periksa kriterianya secara eksplisit.</div>
+        </section>
+
+        <section class="lesson" id="delete">
+          <div class="lesson-head"><span class="lesson-number">02</span><div><h2>DELETE — menghapus baris</h2><p class="lesson-intro">DELETE menghapus data, bukan struktur tabel. Efeknya dapat permanen setelah COMMIT.</p></div></div>
+          <div class="syntax"><strong>Pola dasar</strong><div class="code-shell"><div class="code-top"><span>SQL</span></div><pre><code>DELETE FROM nama_tabel
+WHERE kondisi;</code></pre></div></div>
+
+          <h3>Kasus — hapus transaksi yang sudah VOID</h3>
+          <div class="code-shell"><div class="code-top"><span>Safe delete</span></div><pre><code>-- 1. Preview target
+SELECT sale_id, invoice_no, status
+FROM sales
+WHERE sale_id = 4 AND status = 'VOID';
+
+-- 2. Hapus hanya jika benar-benar VOID
+DELETE FROM sales
+WHERE sale_id = 4 AND status = 'VOID';</code></pre></div>
+          <p>Foreign key <code>sale_items.sale_id</code> memakai <code>ON DELETE CASCADE</code>. Karena itu, detail barang milik transaksi tersebut ikut terhapus otomatis.</p>
+
+          <h3>Alternatif yang lebih aman — soft delete</h3>
+          <p>Untuk produk yang pernah masuk transaksi, biasanya jangan dihapus. Nonaktifkan saja agar riwayat laporan tetap utuh.</p>
+          <div class="code-shell"><div class="code-top"><span>Soft delete</span></div><pre><code>UPDATE products
+SET is_active = FALSE
+WHERE product_id = 8;
+
+-- Menu kasir hanya menampilkan produk aktif
+SELECT * FROM products
+WHERE is_active = TRUE;</code></pre></div>
+          <div class="danger"><strong>DELETE tanpa WHERE = seluruh isi tabel hilang.</strong><code>DELETE FROM sales;</code> menghapus semua transaksi yang tidak terhalang relasi atau constraint.</div>
+        </section>
+
+        <section class="lesson" id="transaction">
+          <div class="lesson-head"><span class="lesson-number">03</span><div><h2>Transaction — satu paket kerja</h2><p class="lesson-intro">Sekelompok query yang harus dianggap sebagai satu kesatuan: semuanya berhasil atau semuanya dibatalkan.</p></div></div>
+
+          <div class="flow" aria-label="Alur transaksi">
+            <div class="flow-step">START</div><div class="flow-step">Kunci stok</div><div class="flow-step">Simpan penjualan</div><div class="flow-step">Kurangi stok</div><div class="flow-step">COMMIT</div>
+          </div>
+
+          <div class="comparison"><table><thead><tr><th>Perintah</th><th>Fungsi</th><th>Kapan dipakai</th></tr></thead><tbody>
+            <tr><td><code>START TRANSACTION</code></td><td>Memulai transaksi.</td><td>Sebelum query yang saling bergantung.</td></tr>
+            <tr><td><code>COMMIT</code></td><td>Menyimpan semua perubahan.</td><td>Jika seluruh langkah berhasil.</td></tr>
+            <tr><td><code>ROLLBACK</code></td><td>Membatalkan perubahan sejak transaksi dimulai.</td><td>Jika stok kurang atau terjadi error.</td></tr>
+            <tr><td><code>SAVEPOINT</code></td><td>Membuat titik pemulihan di tengah transaksi.</td><td>Untuk alur transaksi yang lebih panjang.</td></tr>
+          </tbody></table></div>
+
+          <h3>Kasus lengkap — pelanggan membeli 2 Nasi Goreng</h3>
+          <div class="code-shell"><div class="code-top"><span>Checkout transaction</span></div><pre><code>START TRANSACTION;
+
+SET @product_id = 1;
+SET @qty = 2;
+SET @unit_price = 15000.00;
+SET @total = @qty * @unit_price;
+
+-- Kunci baris agar stok tidak dipakai transaksi lain bersamaan.
+SELECT product_id, product_name, stock
+FROM products
+WHERE product_id = @product_id
+FOR UPDATE;
+
+-- Kurangi stok secara atomik. Jika ROW_COUNT() = 0, jalankan
+-- ROLLBACK dan jangan lanjutkan karena stok tidak cukup.
+UPDATE products
+SET stock = stock - @qty
+WHERE product_id = @product_id
+  AND stock &gt;= @qty;
+
+SELECT ROW_COUNT() AS stock_updated; -- Harus bernilai 1.
+
+INSERT INTO sales (
+  invoice_no, cashier_id, subtotal, discount, total,
+  payment_method, amount_paid, change_amount, status
+) VALUES (
+  CONCAT('INV-', UUID()),
+  1, @total, 0, @total, 'CASH', 50000, 50000 - @total, 'PAID'
+);
+
+SET @sale_id = LAST_INSERT_ID();
+
+INSERT INTO sale_items (sale_id, product_id, quantity, unit_price)
+VALUES (@sale_id, @product_id, @qty, @unit_price);
+
+COMMIT;</code></pre></div>
+          <div class="tip"><strong>Jika stok kurang atau ada query gagal, jalankan ROLLBACK.</strong>Gunakan tabel ber-engine InnoDB agar transaction dan row locking bekerja. Dalam aplikasi nyata, kode backend wajib memeriksa hasil UPDATE sebelum COMMIT.</div>
+
+          <h3>Eksperimen ROLLBACK yang aman</h3>
+          <div class="code-shell"><div class="code-top"><span>Try it</span></div><pre><code>START TRANSACTION;
+
+UPDATE products
+SET price = 999999.00
+WHERE product_id = 1;
+
+SELECT product_id, product_name, price
+FROM products WHERE product_id = 1;
+
+ROLLBACK;
+
+-- Harga kembali seperti sebelum transaksi.
+SELECT product_id, product_name, price
+FROM products WHERE product_id = 1;</code></pre></div>
+        </section>
+
+        <section class="lesson" id="alter">
+          <div class="lesson-head"><span class="lesson-number">04</span><div><h2>ALTER TABLE — mengubah struktur</h2><p class="lesson-intro">Berbeda dari UPDATE yang mengubah isi baris, ALTER TABLE mengubah bentuk atau aturan tabel.</p></div></div>
+          <div class="tip"><strong>Gunakan tabel products_practice.</strong>File database menyediakan salinan khusus latihan agar tabel <code>products</code> utama tidak rusak.</div>
+
+          <h3>Ganti nama kolom sekaligus tipe datanya</h3>
+          <div class="code-shell"><div class="code-top"><span>CHANGE COLUMN</span></div><pre><code>ALTER TABLE products_practice
+CHANGE COLUMN product_description item_description TEXT NULL;</code></pre></div>
+
+          <h3>Ganti beberapa kolom dalam satu perintah</h3>
+          <div class="code-shell"><div class="code-top"><span>Multiple changes</span></div><pre><code>ALTER TABLE products_practice
+  CHANGE COLUMN product_name item_name VARCHAR(120) NOT NULL,
+  CHANGE COLUMN stock current_stock BIGINT UNSIGNED NOT NULL DEFAULT 0;</code></pre></div>
+
+          <h3>Ubah tipe data tanpa mengganti nama</h3>
+          <div class="code-shell"><div class="code-top"><span>MODIFY COLUMN</span></div><pre><code>ALTER TABLE products_practice
+MODIFY COLUMN product_name VARCHAR(150) NOT NULL;</code></pre></div>
+
+          <h3>Tambah dan hapus kolom</h3>
+          <div class="code-shell"><div class="code-top"><span>ADD / DROP</span></div><pre><code>ALTER TABLE products_practice
+ADD COLUMN barcode VARCHAR(50) NULL AFTER product_code;
+
+ALTER TABLE products_practice
+DROP COLUMN barcode;</code></pre></div>
+
+          <h3>Tambah dan hapus UNIQUE constraint</h3>
+          <div class="code-shell"><div class="code-top"><span>Constraint</span></div><pre><code>ALTER TABLE products_practice
+ADD CONSTRAINT uq_practice_product_name
+UNIQUE (product_name);
+
+-- Di MySQL, UNIQUE constraint dihapus melalui nama index.
+ALTER TABLE products_practice
+DROP INDEX uq_practice_product_name;</code></pre></div>
+
+          <div class="danger"><strong>Koreksi dari catatan awal.</strong><code>DROR CONSIBATNT</code> bukan sintaks SQL. Untuk UNIQUE di MySQL gunakan <code>DROP INDEX nama_constraint</code>; untuk foreign key gunakan <code>DROP FOREIGN KEY nama_constraint</code>.</div>
+
+          <h3>Reset tabel latihan</h3>
+          <div class="code-shell"><div class="code-top"><span>Reset</span></div><pre><code>DROP TABLE IF EXISTS products_practice;
+CREATE TABLE products_practice LIKE products;
+INSERT INTO products_practice SELECT * FROM products;</code></pre></div>
+        </section>
+
+        <section class="lesson" id="index">
+          <div class="lesson-head"><span class="lesson-number">05</span><div><h2>INDEX — mempercepat pencarian</h2><p class="lesson-intro">Index mirip daftar indeks buku: database dapat menemukan baris tanpa membaca seluruh tabel.</p></div></div>
+
+          <h3>Pencarian nama produk</h3>
+          <div class="code-shell"><div class="code-top"><span>Index-friendly search</span></div><pre><code>-- Index ini sudah dibuat oleh kantin_pos.sql:
+-- CREATE INDEX idx_products_name ON products(product_name);
+
+SHOW INDEX FROM products;
+
+EXPLAIN
+SELECT * FROM products
+WHERE product_name LIKE 'Nasi%';</code></pre></div>
+          <div class="tip"><strong>Posisi wildcard penting.</strong><code>LIKE 'Nasi%'</code> umumnya dapat memakai B-tree index. <code>LIKE '%Nasi%'</code> memiliki wildcard di depan sehingga index biasa sering tidak dapat dimanfaatkan secara optimal.</div>
+
+          <h3>Contoh siklus buat, cek, lalu hapus index</h3>
+          <div class="code-shell"><div class="code-top"><span>Index lifecycle</span></div><pre><code>CREATE INDEX idx_products_price
+ON products(price);
+
+SHOW INDEX FROM products;
+
+EXPLAIN
+SELECT product_name, price
+FROM products
+WHERE price BETWEEN 5000 AND 12000;
+
+DROP INDEX idx_products_price ON products;
+-- Alternatif MySQL:
+-- ALTER TABLE products DROP INDEX idx_products_price;</code></pre></div>
+          <div class="comparison"><table><thead><tr><th>Cocok diberi index</th><th>Tidak selalu cocok</th></tr></thead><tbody>
+            <tr><td>Kolom yang sering dipakai di WHERE, JOIN, ORDER BY.</td><td>Tabel sangat kecil yang jarang dicari.</td></tr>
+            <tr><td>Foreign key dan kolom dengan variasi nilai tinggi.</td><td>Kolom boolean tunggal dengan nilai hanya 0 dan 1.</td></tr>
+            <tr><td>Pencarian invoice, kode produk, atau rentang tanggal.</td><td>Terlalu banyak index pada tabel yang sering INSERT/UPDATE.</td></tr>
+          </tbody></table></div>
+        </section>
+
+        <section class="lesson" id="import">
+          <div class="lesson-head"><span class="lesson-number">06</span><div><h2>Impor database latihan</h2><p class="lesson-intro">File <code>kantin_pos.sql</code> sudah berisi schema, relasi, index, view, dan data contoh.</p></div></div>
+          <h3>Melalui phpMyAdmin</h3>
+          <ol>
+            <li>Buka phpMyAdmin lalu pilih menu <strong>Import</strong>.</li>
+            <li>Pilih file <strong>kantin_pos.sql</strong>.</li>
+            <li>Pastikan formatnya SQL, lalu klik <strong>Import/Go</strong>.</li>
+            <li>Buka database <strong>kantin_pos</strong> dan jalankan <code>SELECT * FROM v_ringkasan_penjualan;</code>.</li>
+          </ol>
+          <h3>Melalui terminal</h3>
+          <div class="terminal"><span class="prompt">$</span> mysql -u root -p &lt; kantin_pos.sql<br><span class="prompt">$</span> mysql -u root -p kantin_pos</div>
+          <h3>Verifikasi hasil impor</h3>
+          <div class="code-shell"><div class="code-top"><span>Verification</span></div><pre><code>USE kantin_pos;
+SHOW TABLES;
+SELECT * FROM products;
+SELECT * FROM v_ringkasan_penjualan
+ORDER BY sale_time;</code></pre></div>
+          <ul class="checklist"><li>Database menggunakan charset utf8mb4.</li><li>Semua tabel menggunakan InnoDB.</li><li>Foreign key menjaga relasi antar-data.</li><li>File aman diimpor ulang karena objek lama di-reset.</li></ul>
+        </section>
+
+        <section class="lesson" id="latihan">
+          <div class="lesson-head"><span class="lesson-number">07</span><div><h2>Uji pemahaman</h2><p class="lesson-intro">Coba tulis query sendiri sebelum membuka jawabannya.</p></div></div>
+
+          <article class="quiz-card"><p>1. Harga “Kopi Susu” berubah menjadi Rp9.000. Query apa yang digunakan?</p><button class="answer-btn" type="button">Lihat jawaban</button><div class="answer"><code>UPDATE products SET price = 9000.00 WHERE product_code = 'MNM-002';</code></div></article>
+          <article class="quiz-card"><p>2. Bagaimana menonaktifkan “Pisang Goreng” tanpa menghapus riwayatnya?</p><button class="answer-btn" type="button">Lihat jawaban</button><div class="answer"><code>UPDATE products SET is_active = FALSE WHERE product_code = 'SNK-002';</code></div></article>
+          <article class="quiz-card"><p>3. Kapan ROLLBACK digunakan dalam proses pembayaran?</p><button class="answer-btn" type="button">Lihat jawaban</button><div class="answer">Gunakan <code>ROLLBACK</code> jika salah satu langkah gagal—misalnya stok tidak cukup atau INSERT detail penjualan error—agar header penjualan dan perubahan stok tidak tersimpan sebagian.</div></article>
+          <article class="quiz-card"><p>4. Mengapa query <code>LIKE '%Teh%'</code> kurang ideal untuk B-tree index biasa?</p><button class="answer-btn" type="button">Lihat jawaban</button><div class="answer">Karena wildcard berada di awal. Database tidak memiliki awalan pasti untuk melakukan pencarian terarah pada B-tree dan sering harus memindai lebih banyak baris.</div></article>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer><span>SQL Lab Kantin · Modul pembelajaran MySQL 8+</span><span>Praktikkan pada database latihan, bukan database produksi.</span></footer>
+
+  <script>
+    document.querySelectorAll('.code-shell').forEach((shell, index) => {
+      const top = shell.querySelector('.code-top');
+      const code = shell.querySelector('code');
+      if (!top || !code || top.querySelector('.copy-btn')) return;
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'copy-btn';
+      button.textContent = 'Salin';
+      button.setAttribute('aria-label', `Salin contoh kode ${index + 1}`);
+      button.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(code.textContent.trim());
+          button.textContent = 'Tersalin ✓';
+          setTimeout(() => button.textContent = 'Salin', 1600);
+        } catch (error) {
+          button.textContent = 'Pilih manual';
+        }
+      });
+      top.appendChild(button);
+    });
+
+    document.querySelectorAll('.answer-btn').forEach(button => {
+      button.addEventListener('click', () => {
+        const answer = button.nextElementSibling;
+        const isShown = answer.classList.toggle('show');
+        button.textContent = isShown ? 'Sembunyikan jawaban' : 'Lihat jawaban';
+        button.setAttribute('aria-expanded', String(isShown));
+      });
+    });
+  </script>
+</body>
+</html>

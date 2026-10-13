@@ -1,0 +1,658 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Infografik satu halaman berisi 23 studi kasus analisis frontend, backend, dan rancangan database.">
+  <title>23 Studi Kasus Database — Frontend ke ERD</title>
+  <style>
+    :root {
+      --ink: #14213d;
+      --ink-2: #203052;
+      --paper: #f7f5ef;
+      --white: #fff;
+      --muted: #687186;
+      --line: #dfe3e8;
+      --lime: #c7f36b;
+      --lime-dark: #6c971c;
+      --coral: #ff6b57;
+      --sky: #66c7f1;
+      --yellow: #ffd166;
+      --violet: #9b8afb;
+      --green: #38b27c;
+      --shadow: 0 18px 55px rgba(20, 33, 61, .11);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.55;
+    }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    a { color: inherit; }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      color: white;
+      background: var(--ink);
+    }
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      opacity: .08;
+      background-image: linear-gradient(90deg, white 1px, transparent 1px), linear-gradient(white 1px, transparent 1px);
+      background-size: 42px 42px;
+      mask-image: linear-gradient(to bottom, #000, transparent 85%);
+    }
+    .orb { position: absolute; border-radius: 999px; filter: blur(1px); }
+    .orb.one { width: 410px; height: 410px; top: -230px; right: -80px; background: rgba(102,199,241,.28); }
+    .orb.two { width: 240px; height: 240px; bottom: -150px; left: 8%; background: rgba(199,243,107,.22); }
+    .hero-inner {
+      position: relative;
+      width: min(1180px, calc(100% - 40px));
+      margin: auto;
+      min-height: 590px;
+      padding: 70px 0 95px;
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      align-items: center;
+      gap: 70px;
+    }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 13px;
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 99px;
+      color: #e6f7ff;
+      background: rgba(255,255,255,.07);
+      font-size: .76rem;
+      font-weight: 900;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+    .eyebrow span { width: 8px; height: 8px; border-radius: 50%; background: var(--lime); box-shadow: 0 0 0 6px rgba(199,243,107,.13); }
+    h1 {
+      margin: 22px 0 20px;
+      max-width: 720px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(3.2rem, 7vw, 6.7rem);
+      line-height: .92;
+      letter-spacing: -.055em;
+    }
+    h1 em { color: var(--lime); font-style: normal; }
+    .hero-copy { max-width: 650px; margin: 0; color: #cbd5e4; font-size: 1.08rem; }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 11px; margin-top: 29px; }
+    .btn {
+      min-height: 46px;
+      padding: 10px 17px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 0;
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: 900;
+      transition: transform .2s ease;
+    }
+    .btn:hover { transform: translateY(-2px); }
+    .btn-primary { color: var(--ink); background: var(--lime); box-shadow: 0 10px 30px rgba(199,243,107,.2); }
+    .btn-secondary { color: white; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.18); }
+
+    .architecture {
+      position: relative;
+      min-height: 360px;
+      display: grid;
+      align-content: center;
+      gap: 17px;
+    }
+    .arch-row { display: grid; grid-template-columns: 1fr 60px 1fr; align-items: center; }
+    .arch-box {
+      padding: 18px;
+      border-radius: 17px;
+      color: var(--ink);
+      background: white;
+      box-shadow: 0 15px 40px rgba(0,0,0,.17);
+    }
+    .arch-box small { display: block; margin-bottom: 3px; color: var(--muted); font-size: .66rem; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }
+    .arch-box strong { display: block; font: 700 1.15rem/1.2 Georgia, serif; }
+    .arch-box code { color: var(--muted); font-size: .72rem; }
+    .arch-box.front { border-top: 5px solid var(--sky); transform: rotate(-2deg); }
+    .arch-box.back { border-top: 5px solid var(--yellow); transform: rotate(2deg); }
+    .arch-box.db { width: 66%; margin: 0 auto; border-top: 5px solid var(--lime); text-align: center; }
+    .connector { color: var(--lime); text-align: center; font-weight: 900; letter-spacing: -2px; }
+    .down { height: 35px; border-left: 2px dashed rgba(255,255,255,.42); margin: 0 auto; }
+
+    .summary-wrap { position: relative; z-index: 3; width: min(1080px, calc(100% - 40px)); margin: -45px auto 0; }
+    .summary-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      overflow: hidden;
+      border-radius: 18px;
+      background: white;
+      box-shadow: var(--shadow);
+    }
+    .metric { padding: 21px 23px; border-right: 1px solid var(--line); }
+    .metric:last-child { border: 0; }
+    .metric strong { display: block; font: 700 1.65rem/1.1 Georgia, serif; }
+    .metric span { color: var(--muted); font-size: .78rem; font-weight: 800; }
+
+    .container { width: min(1180px, calc(100% - 40px)); margin: auto; }
+    .section-head { margin: 92px 0 30px; display: grid; grid-template-columns: 1fr .8fr; align-items: end; gap: 30px; }
+    .overline { color: var(--coral); font-size: .75rem; font-weight: 900; letter-spacing: .15em; text-transform: uppercase; }
+    h2 { margin: 6px 0 0; font: 700 clamp(2.1rem, 4.5vw, 3.7rem)/1 Georgia, serif; letter-spacing: -.04em; }
+    .section-head p { margin: 0; color: var(--muted); }
+
+    .workflow { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; margin-bottom: 80px; }
+    .flow-step {
+      position: relative;
+      min-height: 185px;
+      padding: 18px 15px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 17px;
+      background: white;
+    }
+    .flow-step::after {
+      content: attr(data-number);
+      position: absolute;
+      right: -5px;
+      bottom: -22px;
+      color: rgba(20,33,61,.06);
+      font: 700 5.5rem/1 Georgia, serif;
+    }
+    .flow-number { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 9px; color: white; background: var(--ink); font-weight: 900; font-size: .75rem; }
+    .flow-step h3 { margin: 17px 0 7px; font-size: .94rem; line-height: 1.2; }
+    .flow-step p { position: relative; z-index: 1; margin: 0; color: var(--muted); font-size: .76rem; }
+
+    .notice {
+      display: flex;
+      gap: 14px;
+      margin-bottom: 24px;
+      padding: 15px 18px;
+      border: 1px solid #f4c979;
+      border-radius: 14px;
+      color: #664718;
+      background: #fff7df;
+      font-size: .88rem;
+    }
+    .notice strong { white-space: nowrap; }
+
+    .toolbar-shell {
+      position: sticky;
+      z-index: 30;
+      top: 0;
+      padding: 13px 0;
+      background: rgba(247,245,239,.91);
+      backdrop-filter: blur(16px);
+    }
+    .toolbar { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; }
+    .search { position: relative; }
+    .search::before { content: ""; position: absolute; left: 17px; top: 17px; width: 11px; height: 11px; border: 2px solid var(--muted); border-radius: 50%; }
+    .search::after { content: ""; position: absolute; left: 29px; top: 29px; width: 7px; height: 2px; background: var(--muted); transform: rotate(45deg); }
+    #searchInput {
+      width: 100%;
+      min-height: 49px;
+      padding: 10px 16px 10px 48px;
+      border: 1px solid #cfd5dc;
+      border-radius: 13px;
+      outline: 0;
+      color: var(--ink);
+      background: white;
+      box-shadow: 0 6px 18px rgba(20,33,61,.05);
+    }
+    #searchInput:focus { border-color: var(--sky); box-shadow: 0 0 0 4px rgba(102,199,241,.18); }
+    .filters { display: flex; gap: 7px; }
+    .filter {
+      min-height: 40px;
+      padding: 7px 12px;
+      border: 1px solid #cfd5dc;
+      border-radius: 10px;
+      color: var(--muted);
+      background: white;
+      font-size: .8rem;
+      font-weight: 900;
+    }
+    .filter.active { color: white; border-color: var(--ink); background: var(--ink); }
+
+    .progress-panel {
+      margin: 16px 0 32px;
+      padding: 16px 20px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 16px;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: white;
+    }
+    .progress-panel strong, #progressText { white-space: nowrap; }
+    .progress-track { height: 8px; overflow: hidden; border-radius: 99px; background: #e8ebef; }
+    #progressFill { width: 0; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--sky), var(--green)); transition: width .3s ease; }
+    #progressText { color: var(--green); font-weight: 900; }
+
+    .cases { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; padding-bottom: 85px; }
+    .case {
+      --accent: var(--sky);
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: white;
+      box-shadow: 0 10px 30px rgba(20,33,61,.06);
+      transition: transform .2s ease, box-shadow .2s ease;
+    }
+    .case:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+    .case.hidden { display: none; }
+    .case summary {
+      list-style: none;
+      display: grid;
+      grid-template-columns: 54px 1fr auto;
+      gap: 15px;
+      align-items: center;
+      padding: 20px;
+      cursor: pointer;
+    }
+    .case summary::-webkit-details-marker { display: none; }
+    .case-number {
+      display: grid;
+      place-items: center;
+      width: 54px;
+      height: 54px;
+      border-radius: 15px;
+      color: var(--ink);
+      background: var(--accent);
+      font: 700 1.15rem/1 Georgia, serif;
+    }
+    .case-site { margin: 0; font: 700 1.28rem/1.1 Georgia, serif; }
+    .case-page { margin: 4px 0 0; color: var(--muted); font-size: .81rem; }
+    .case-summary-right { display: grid; justify-items: end; gap: 7px; }
+    .level { padding: 4px 8px; border-radius: 99px; font-size: .66rem; font-weight: 900; text-transform: uppercase; letter-spacing: .06em; }
+    .level.easy { color: #176343; background: #e3f8ee; }
+    .level.medium { color: #80560b; background: #fff0c7; }
+    .table-count { color: var(--muted); font-size: .7rem; font-weight: 800; }
+    .chevron { width: 26px; height: 26px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 8px; font-weight: 900; transition: transform .2s ease; }
+    .case[open] .chevron { transform: rotate(45deg); }
+
+    .case-body { padding: 0 20px 22px; border-top: 1px solid var(--line); }
+    .case-goal { margin: 17px 0; padding: 11px 13px; border-left: 4px solid var(--accent); border-radius: 0 10px 10px 0; color: var(--muted); background: #f6f8fa; font-size: .85rem; }
+    .layer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .layer { padding: 14px; border-radius: 13px; }
+    .layer.frontend { background: #eaf7fd; }
+    .layer.backend { background: #fff5df; }
+    .layer h4, .db-section h4, .relation-section h4 { margin: 0 0 8px; font-size: .76rem; letter-spacing: .1em; text-transform: uppercase; }
+    .layer ul { margin: 0; padding-left: 17px; color: var(--muted); font-size: .78rem; }
+    .layer li + li { margin-top: 4px; }
+    .db-section, .relation-section { margin-top: 15px; }
+    .table-cloud { display: flex; flex-wrap: wrap; gap: 6px; }
+    .table-chip { padding: 5px 8px; border: 1px solid #d5dce3; border-radius: 7px; color: var(--ink-2); background: #f7f9fb; font: 700 .69rem/1.2 "SFMono-Regular", Consolas, monospace; }
+    .table-chip.core { color: #3e5e0d; border-color: #bada80; background: #f4ffe1; }
+    .relations { display: grid; gap: 5px; }
+    .relation { padding: 7px 9px; border-radius: 7px; color: #556075; background: #f4f6f8; font: 600 .67rem/1.4 "SFMono-Regular", Consolas, monospace; overflow-wrap: anywhere; }
+    .case-actions { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 17px; }
+    .complete { display: inline-flex; gap: 7px; align-items: center; color: var(--muted); font-size: .75rem; font-weight: 900; }
+    .complete input { width: 17px; height: 17px; accent-color: var(--green); }
+    .copy-case { padding: 7px 10px; border: 0; border-radius: 8px; color: white; background: var(--ink); font-size: .72rem; font-weight: 900; }
+
+    .empty { display: none; margin-bottom: 80px; padding: 50px 20px; border: 1px dashed #bbc2cb; border-radius: 18px; color: var(--muted); background: white; text-align: center; }
+    .empty.show { display: block; }
+
+    .deliverable {
+      margin-bottom: 90px;
+      overflow: hidden;
+      border-radius: 25px;
+      color: white;
+      background: var(--ink);
+      box-shadow: var(--shadow);
+    }
+    .deliverable-head { padding: 31px 34px 24px; border-bottom: 1px solid rgba(255,255,255,.12); }
+    .deliverable-head h2 { color: white; }
+    .deliverable-head p { margin: 10px 0 0; color: #becadb; }
+    .deliverable-body { display: grid; grid-template-columns: .9fr 1.1fr; }
+    .checklist { padding: 28px 34px; }
+    .check-row { display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: start; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,.08); }
+    .check-row:last-child { border: 0; }
+    .check-box { display: grid; place-items: center; width: 23px; height: 23px; border-radius: 7px; color: var(--ink); background: var(--lime); font-size: .7rem; font-weight: 900; }
+    .check-row small { display: block; color: #aebcd0; }
+    .template { padding: 28px 34px; background: rgba(255,255,255,.06); }
+    .template h3 { margin-top: 0; font-family: Georgia, serif; }
+    pre {
+      margin: 0;
+      padding: 17px;
+      overflow: auto;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 12px;
+      color: #dbe6f4;
+      background: #0c172b;
+      font: .73rem/1.65 "SFMono-Regular", Consolas, monospace;
+    }
+
+    footer { padding: 46px 20px; color: #aebcd0; background: #0c172b; text-align: center; }
+    footer strong { color: white; }
+    footer p { margin: 5px 0; font-size: .83rem; }
+    .to-top {
+      position: fixed;
+      z-index: 50;
+      right: 22px;
+      bottom: 22px;
+      width: 44px;
+      height: 44px;
+      border: 0;
+      border-radius: 50%;
+      color: white;
+      background: var(--ink);
+      box-shadow: var(--shadow);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(10px);
+      transition: .2s ease;
+    }
+    .to-top.show { opacity: 1; pointer-events: auto; transform: none; }
+
+    @media (max-width: 1000px) {
+      .hero-inner { grid-template-columns: 1fr; text-align: center; min-height: auto; }
+      .hero-copy { margin-inline: auto; }
+      .hero-actions { justify-content: center; }
+      .architecture { width: min(600px, 100%); min-height: 270px; margin: auto; }
+      .workflow { grid-template-columns: repeat(4, 1fr); }
+    }
+    @media (max-width: 760px) {
+      .hero-inner { padding: 50px 0 80px; }
+      .architecture { display: none; }
+      .summary-bar { grid-template-columns: 1fr 1fr; }
+      .metric:nth-child(2) { border-right: 0; }
+      .metric:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
+      .section-head { grid-template-columns: 1fr; margin-top: 75px; }
+      .workflow { grid-template-columns: repeat(2, 1fr); }
+      .toolbar { grid-template-columns: 1fr; }
+      .filters { overflow-x: auto; padding-bottom: 2px; }
+      .filter { white-space: nowrap; }
+      .cases { grid-template-columns: 1fr; }
+      .deliverable-body { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 480px) {
+      .container, .hero-inner, .summary-wrap { width: min(100% - 24px, 1180px); }
+      h1 { font-size: clamp(3rem, 16vw, 4.8rem); }
+      .hero-copy { font-size: .98rem; }
+      .summary-wrap { margin-top: -30px; }
+      .metric { padding: 16px; }
+      .workflow { gap: 8px; }
+      .flow-step { min-height: 175px; padding: 14px 12px; }
+      .notice { display: block; }
+      .notice strong { display: block; }
+      .progress-panel { grid-template-columns: 1fr auto; }
+      .progress-track { grid-column: 1 / -1; grid-row: 2; }
+      .case summary { grid-template-columns: 48px 1fr; padding: 16px; }
+      .case-number { width: 48px; height: 48px; }
+      .case-summary-right { grid-column: 1 / -1; display: flex; justify-content: flex-start; }
+      .chevron { margin-left: auto; }
+      .case-body { padding: 0 16px 18px; }
+      .layer-grid { grid-template-columns: 1fr; }
+      .case-actions { align-items: stretch; flex-direction: column; }
+      .copy-case { width: 100%; }
+      .checklist, .template, .deliverable-head { padding: 23px 20px; }
+    }
+    @media print {
+      body { background: white; }
+      .hero-inner { display: block; min-height: auto; padding: 35px 0; }
+      .architecture, .hero-actions, .toolbar-shell, .progress-panel, .to-top, .copy-case { display: none !important; }
+      .summary-wrap { margin-top: 15px; }
+      .workflow { grid-template-columns: repeat(4, 1fr); }
+      .case { break-inside: avoid; box-shadow: none; }
+      .case-body { display: block !important; }
+      .cases { grid-template-columns: 1fr; }
+      .deliverable { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="orb one"></div><div class="orb two"></div>
+    <div class="hero-inner">
+      <div>
+        <div class="eyebrow"><span></span> Database Case Study Kit</div>
+        <h1>23 website.<br><em>1 halaman.</em><br>Bedah sampai ERD.</h1>
+        <p class="hero-copy">Panduan visual untuk membongkar satu halaman website populer: mulai dari elemen yang terlihat, proses server yang diperkirakan, hingga tabel dan relasi database.</p>
+        <div class="hero-actions">
+          <a href="#cases" class="btn btn-primary">Pilih studi kasus</a>
+          <button class="btn btn-secondary" type="button" onclick="window.print()">Cetak / Simpan PDF</button>
+        </div>
+      </div>
+      <div class="architecture" aria-hidden="true">
+        <div class="arch-row">
+          <div class="arch-box front"><small>Lapisan 01</small><strong>Frontend</strong><code>foto · tombol · form · daftar</code></div>
+          <div class="connector">---</div>
+          <div class="arch-box back"><small>Lapisan 02</small><strong>Backend</strong><code>validasi · logika · API</code></div>
+        </div>
+        <div class="down"></div>
+        <div class="arch-box db"><small>Lapisan 03</small><strong>Database & ERD</strong><code>tables · primary key · foreign key</code></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="summary-wrap">
+    <div class="summary-bar">
+      <div class="metric"><strong>23</strong><span>pilihan website</span></div>
+      <div class="metric"><strong>1</strong><span>halaman per kelompok</span></div>
+      <div class="metric"><strong>5+</strong><span>tabel minimum</span></div>
+      <div class="metric"><strong>7</strong><span>output akhir</span></div>
+    </div>
+  </div>
+
+  <main class="container">
+    <section aria-labelledby="workflow-title">
+      <div class="section-head">
+        <div><div class="overline">Alur pengerjaan</div><h2 id="workflow-title">Satu halaman, tujuh langkah.</h2></div>
+        <p>Gunakan urutan yang sama untuk setiap studi kasus. Mulai dari observasi antarmuka, lalu bergerak ke lapisan yang tidak terlihat.</p>
+      </div>
+      <div class="workflow">
+        <article class="flow-step" data-number="1"><div class="flow-number">01</div><h3>Pilih halaman</h3><p>Tetapkan satu website dan satu halaman. Jangan membedah seluruh aplikasi.</p></article>
+        <article class="flow-step" data-number="2"><div class="flow-number">02</div><h3>Ambil screenshot</h3><p>Simpan bukti tampilan dan tandai area penting pada halaman.</p></article>
+        <article class="flow-step" data-number="3"><div class="flow-number">03</div><h3>Petakan frontend</h3><p>Catat informasi, form, tombol, filter, daftar, dan aksi pengguna.</p></article>
+        <article class="flow-step" data-number="4"><div class="flow-number">04</div><h3>Perkirakan backend</h3><p>Jelaskan validasi, autentikasi, perhitungan, dan proses server.</p></article>
+        <article class="flow-step" data-number="5"><div class="flow-number">05</div><h3>Tentukan tabel</h3><p>Pilih minimal lima tabel yang dibutuhkan oleh halaman tersebut.</p></article>
+        <article class="flow-step" data-number="6"><div class="flow-number">06</div><h3>Tentukan PK/FK</h3><p>Tambahkan kolom penting, primary key, foreign key, dan kardinalitas.</p></article>
+        <article class="flow-step" data-number="7"><div class="flow-number">07</div><h3>Gambar ERD</h3><p>Visualisasikan hubungan tabel dan presentasikan alasan desainnya.</p></article>
+      </div>
+    </section>
+
+    <section id="cases" aria-labelledby="cases-title">
+      <div class="section-head">
+        <div><div class="overline">Katalog studi kasus</div><h2 id="cases-title">Pilih kasus untuk dibedah.</h2></div>
+        <p>Klik kartu untuk melihat frontend, backend, kandidat tabel, dan relasi awal. Tabel berwarna hijau adalah lima tabel inti yang disarankan.</p>
+      </div>
+      <div class="notice"><strong>Catatan penting:</strong><span>Semua struktur di bawah adalah rancangan simulasi untuk pembelajaran, bukan database asli perusahaan.</span></div>
+
+      <div class="toolbar-shell">
+        <div class="toolbar">
+          <label class="search"><input id="searchInput" type="search" placeholder="Cari website, halaman, tabel, atau proses…" aria-label="Cari studi kasus"></label>
+          <div class="filters" role="group" aria-label="Filter tingkat kesulitan">
+            <button class="filter active" type="button" data-level="all">Semua</button>
+            <button class="filter" type="button" data-level="easy">Mudah</button>
+            <button class="filter" type="button" data-level="medium">Menengah</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="progress-panel">
+        <strong>Kasus yang ditinjau</strong>
+        <div class="progress-track"><div id="progressFill"></div></div>
+        <span id="progressText">0 / 23</span>
+      </div>
+
+      <div class="cases" id="caseList"></div>
+      <div class="empty" id="emptyState"><strong>Studi kasus tidak ditemukan.</strong><br>Gunakan kata pencarian lain atau ubah filter.</div>
+    </section>
+
+    <section class="deliverable" aria-labelledby="deliverable-title">
+      <div class="deliverable-head"><div class="overline">Hasil pengumpulan</div><h2 id="deliverable-title">Checklist output akhir.</h2><p>Setiap siswa atau kelompok mengumpulkan tujuh komponen berikut untuk satu halaman yang dipilih.</p></div>
+      <div class="deliverable-body">
+        <div class="checklist">
+          <div class="check-row"><span class="check-box">1</span><span>Screenshot satu halaman<small>Berikan anotasi pada komponen penting.</small></span></div>
+          <div class="check-row"><span class="check-box">2</span><span>Daftar komponen frontend<small>Data, input, tombol, filter, dan interaksi.</small></span></div>
+          <div class="check-row"><span class="check-box">3</span><span>Daftar proses backend<small>Validasi, autentikasi, logika, dan query.</small></span></div>
+          <div class="check-row"><span class="check-box">4</span><span>Minimal lima tabel database<small>Jelaskan fungsi setiap tabel.</small></span></div>
+          <div class="check-row"><span class="check-box">5</span><span>Kolom setiap tabel<small>Pilih tipe data yang sesuai.</small></span></div>
+          <div class="check-row"><span class="check-box">6</span><span>Primary key dan foreign key<small>Tunjukkan hubungan antarentitas.</small></span></div>
+          <div class="check-row"><span class="check-box">7</span><span>ERD sederhana<small>Sertakan kardinalitas one-to-one, one-to-many, atau many-to-many.</small></span></div>
+        </div>
+        <div class="template">
+          <h3>Template analisis tabel</h3>
+          <pre>Nama website  :
+Nama halaman  :
+Tujuan halaman:
+Pengguna      :
+
+Tabel: products
+- id           BIGINT PRIMARY KEY
+- store_id     BIGINT FOREIGN KEY
+- category_id  BIGINT FOREIGN KEY
+- name         VARCHAR(150)
+- description  TEXT
+- price        DECIMAL(12,2)
+- status       VARCHAR(20)
+- created_at   DATETIME
+- updated_at   DATETIME
+
+Relasi:
+products.store_id -> stores.id</pre>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer><strong>23 Database Case Studies</strong><p>Dari tampilan frontend menuju proses backend dan ERD.</p></footer>
+  <button class="to-top" id="toTop" type="button" aria-label="Kembali ke atas">UP</button>
+
+  <script>
+    const studies = [
+      {site:'Tokopedia',page:'Detail Produk',level:'easy',color:'#66c7f1',goal:'Memahami bagaimana satu produk, toko, stok, variasi, ulasan, dan keranjang saling terhubung.',front:['Foto dan galeri produk','Nama, harga, variasi, jumlah','Informasi toko dan stok','Rating, ulasan, tombol keranjang'],back:['Ambil produk berdasarkan ID','Gabungkan toko, kategori, gambar, dan stok','Validasi variasi dan jumlah','Simpan produk ke keranjang'],tables:['users','stores','products','product_images','product_variants','categories','inventories','reviews','carts','cart_items','wishlists'],relations:['stores.user_id -> users.id','products.store_id -> stores.id','products.category_id -> categories.id','reviews.product_id -> products.id','cart_items.product_id -> products.id']},
+      {site:'Shopee',page:'Keranjang Belanja',level:'easy',color:'#ff8a64',goal:'Menganalisis keranjang lintas toko, variasi, voucher, stok, jumlah, dan subtotal.',front:['Produk dikelompokkan per toko','Harga, variasi, dan kuantitas','Voucher dan pilihan item','Subtotal dan tombol checkout'],back:['Ambil keranjang pengguna aktif','Validasi stok dan harga terbaru','Hitung subtotal per toko','Validasi voucher dan ongkir'],tables:['users','shops','products','product_variants','carts','cart_items','vouchers','voucher_usages','shipping_methods','inventories'],relations:['carts.user_id -> users.id','cart_items.cart_id -> carts.id','cart_items.product_id -> products.id','cart_items.product_variant_id -> product_variants.id','products.shop_id -> shops.id']},
+      {site:'Amazon',page:'Detail Produk',level:'easy',color:'#ffd166',goal:'Membandingkan satu produk yang dapat dijual melalui beberapa penawaran penjual.',front:['Galeri, judul, dan deskripsi','Harga dan informasi penjual','Pilihan pengiriman','Rating, ulasan, tombol beli'],back:['Ambil detail produk','Pilih penawaran penjual','Cek stok dan lokasi pengiriman','Susun rekomendasi produk'],tables:['users','products','product_images','categories','sellers','product_offers','inventories','reviews','addresses','shipping_options','recommendations'],relations:['products.category_id -> categories.id','product_offers.product_id -> products.id','product_offers.seller_id -> sellers.id','reviews.product_id -> products.id','addresses.user_id -> users.id']},
+      {site:'YouTube',page:'Tonton Video',level:'easy',color:'#ff6b57',goal:'Menjelaskan hubungan video, channel, penonton, like, komentar, dan rekomendasi.',front:['Pemutar video dan judul','Channel dan tombol subscribe','Like dan deskripsi','Komentar dan rekomendasi'],back:['Ambil metadata dan stream video','Catat view dan riwayat','Simpan like atau subscribe','Ambil komentar dan rekomendasi'],tables:['users','channels','videos','video_files','video_views','video_likes','comments','comment_likes','subscriptions','watch_history','playlists','playlist_videos'],relations:['channels.user_id -> users.id','videos.channel_id -> channels.id','comments.video_id -> videos.id','subscriptions.channel_id -> channels.id','video_likes.user_id -> users.id']},
+      {site:'Instagram',page:'Detail Postingan',level:'easy',color:'#e879b9',goal:'Memetakan postingan multimedia dengan interaksi like, komentar, follow, simpan, dan hashtag.',front:['Foto atau video','Profil dan caption','Like dan komentar','Simpan serta bagikan'],back:['Ambil post dan media','Periksa hubungan follow','Hitung dan simpan like','Ambil komentar dan bookmark'],tables:['users','profiles','posts','post_media','post_likes','comments','comment_likes','followers','saved_posts','hashtags','post_hashtags'],relations:['profiles.user_id -> users.id','posts.user_id -> users.id','post_media.post_id -> posts.id','post_likes.post_id -> posts.id','post_hashtags.hashtag_id -> hashtags.id']},
+      {site:'TikTok',page:'Profil Pengguna',level:'easy',color:'#79d9d1',goal:'Menganalisis profil, statistik follow, koleksi video, view, dan like.',front:['Foto, username, dan bio','Jumlah follower dan following','Tombol follow','Grid video dan jumlah like'],back:['Ambil profil dari username','Hitung statistik follow','Periksa status follow','Ambil video secara pagination'],tables:['users','profiles','videos','video_views','video_likes','followers','comments','profile_visits'],relations:['profiles.user_id -> users.id','videos.user_id -> users.id','followers.followed_id -> users.id','video_views.video_id -> videos.id','comments.video_id -> videos.id']},
+      {site:'X / Twitter',page:'Detail Tweet',level:'easy',color:'#8aa4bd',goal:'Memahami post pendek dengan reply, repost, like, media, hashtag, dan bookmark.',front:['Isi tweet dan profil','Media gambar atau video','Reply, repost, dan like','Bookmark dan waktu publikasi'],back:['Ambil tweet berdasarkan ID','Cek visibilitas akun','Ambil thread reply','Simpan like, repost, atau bookmark'],tables:['users','profiles','tweets','tweet_media','tweet_likes','tweet_reposts','tweet_replies','followers','bookmarks','hashtags','tweet_hashtags'],relations:['tweets.user_id -> users.id','tweet_media.tweet_id -> tweets.id','tweet_replies.parent_tweet_id -> tweets.id','tweet_likes.user_id -> users.id','tweet_hashtags.hashtag_id -> hashtags.id']},
+      {site:'Facebook',page:'Detail Postingan',level:'easy',color:'#7fb2ff',goal:'Menghubungkan postingan dengan privasi, media, reaction, komentar, pertemanan, dan share.',front:['Profil pembuat dan isi post','Foto atau video','Reaction dan komentar','Tombol bagikan'],back:['Periksa aturan privasi','Ambil konten dan media','Simpan reaction dan komentar','Buat catatan share'],tables:['users','profiles','posts','post_media','reactions','comments','comment_reactions','friendships','post_shares','privacy_settings'],relations:['posts.user_id -> users.id','post_media.post_id -> posts.id','reactions.post_id -> posts.id','comments.post_id -> posts.id','privacy_settings.user_id -> users.id']},
+      {site:'Netflix',page:'Detail Film',level:'easy',color:'#f05b64',goal:'Menganalisis katalog film atau serial, genre, pemeran, langganan, watchlist, dan riwayat.',front:['Poster, trailer, dan judul','Sinopsis dan genre','Pemeran atau episode','Putar dan tambah watchlist'],back:['Ambil film atau episode','Periksa profil dan paket','Simpan watchlist','Catat progres tontonan'],tables:['users','profiles','subscriptions','plans','movies','series','seasons','episodes','genres','movie_genres','actors','movie_actors','watchlists','watch_history'],relations:['profiles.user_id -> users.id','subscriptions.plan_id -> plans.id','episodes.season_id -> seasons.id','movie_genres.movie_id -> movies.id','watchlists.profile_id -> profiles.id']},
+      {site:'Spotify',page:'Detail Playlist',level:'easy',color:'#62d995',goal:'Memahami playlist berurutan yang menghubungkan pengguna, lagu, album, dan artis.',front:['Sampul dan nama playlist','Pembuat dan deskripsi','Daftar lagu dan durasi','Play dan simpan ke library'],back:['Ambil playlist dan hak akses','Ambil lagu berdasarkan urutan','Simpan playlist ke library','Catat riwayat pemutaran'],tables:['users','artists','albums','songs','playlists','playlist_songs','user_libraries','listening_history','song_likes','subscriptions'],relations:['albums.artist_id -> artists.id','songs.album_id -> albums.id','playlists.user_id -> users.id','playlist_songs.playlist_id -> playlists.id','playlist_songs.song_id -> songs.id']},
+      {site:'IMDb',page:'Detail Film',level:'easy',color:'#f4ce56',goal:'Menganalisis informasi film dengan genre, pemeran, kru, rating, dan ulasan.',front:['Judul, poster, dan tahun','Rating dan sinopsis','Sutradara serta pemeran','Ulasan dan film serupa'],back:['Ambil metadata film','Gabungkan pemeran dan kru','Hitung rata-rata rating','Ambil ulasan dan rekomendasi'],tables:['users','movies','genres','movie_genres','people','movie_casts','movie_crews','ratings','reviews','movie_images'],relations:['movie_genres.movie_id -> movies.id','movie_casts.person_id -> people.id','movie_crews.movie_id -> movies.id','ratings.user_id -> users.id','reviews.movie_id -> movies.id']},
+      {site:'Traveloka',page:'Pencarian Penerbangan',level:'medium',color:'#60baf3',goal:'Memodelkan pencarian dinamis berdasarkan bandara, rute, jadwal, kursi, kelas, dan harga.',front:['Asal, tujuan, dan tanggal','Jumlah penumpang','Daftar hasil penerbangan','Filter maskapai dan harga'],back:['Cari jadwal berdasarkan rute','Cek ketersediaan kursi','Hitung harga tiap kelas','Urutkan dan simpan pencarian'],tables:['users','airports','airlines','aircraft','flight_routes','flight_schedules','flight_seats','fare_classes','flight_prices','search_histories','bookings','passengers'],relations:['flight_routes.origin_airport_id -> airports.id','flight_routes.destination_airport_id -> airports.id','flight_schedules.route_id -> flight_routes.id','flight_schedules.airline_id -> airlines.id','flight_prices.schedule_id -> flight_schedules.id']},
+      {site:'Booking.com',page:'Detail Hotel',level:'medium',color:'#77a7ef',goal:'Menghubungkan hotel, fasilitas, tipe kamar, unit kamar, harga, ketersediaan, dan ulasan.',front:['Foto, nama, dan alamat','Fasilitas dan ulasan','Tipe kamar dan kapasitas','Harga serta tanggal tersedia'],back:['Ambil hotel dan fasilitas','Cari kamar pada rentang tanggal','Hitung harga total','Periksa kapasitas dan inventori'],tables:['users','hotels','hotel_images','hotel_facilities','facilities','room_types','rooms','room_prices','room_availability','bookings','booking_guests','reviews'],relations:['hotel_images.hotel_id -> hotels.id','hotel_facilities.facility_id -> facilities.id','room_types.hotel_id -> hotels.id','rooms.room_type_id -> room_types.id','bookings.user_id -> users.id']},
+      {site:'Airbnb',page:'Detail Properti',level:'medium',color:'#ff7d83',goal:'Menganalisis properti sewa dengan host, fasilitas, kalender, harga malam, booking, dan ulasan.',front:['Galeri dan lokasi','Profil host','Fasilitas dan kalender','Harga, ulasan, dan wishlist'],back:['Ambil properti dan host','Periksa tanggal tersedia','Hitung biaya menginap','Simpan booking atau wishlist'],tables:['users','host_profiles','properties','property_images','amenities','property_amenities','availability_calendars','nightly_prices','bookings','booking_guests','reviews','wishlists'],relations:['host_profiles.user_id -> users.id','properties.host_id -> host_profiles.id','property_images.property_id -> properties.id','property_amenities.amenity_id -> amenities.id','bookings.property_id -> properties.id']},
+      {site:'LinkedIn',page:'Detail Lowongan',level:'medium',color:'#65a5db',goal:'Memodelkan lowongan, perusahaan, skill, pelamar, dokumen, dan status lamaran.',front:['Posisi dan perusahaan','Lokasi dan deskripsi','Skill dan kualifikasi','Lamar serta simpan lowongan'],back:['Ambil lowongan dan perusahaan','Cocokkan skill pengguna','Cek status lamaran','Simpan dokumen dan lamaran'],tables:['users','profiles','companies','company_users','job_postings','job_skills','skills','job_applications','application_documents','saved_jobs','job_recommendations'],relations:['profiles.user_id -> users.id','job_postings.company_id -> companies.id','job_skills.skill_id -> skills.id','job_applications.job_id -> job_postings.id','job_applications.user_id -> users.id']},
+      {site:'GitHub',page:'Halaman Repository',level:'medium',color:'#a6b0bd',goal:'Memahami repository, anggota, branch, commit, file, issue, pull request, star, dan fork.',front:['Nama repo dan branch','Daftar file serta README','Commit terakhir','Star, fork, issue, dan pull request'],back:['Periksa akses repository','Ambil tree branch aktif','Ambil commit dan README','Simpan star atau fork'],tables:['users','organizations','repositories','repository_members','branches','commits','files','issues','issue_comments','pull_requests','stars','forks'],relations:['repositories.owner_id -> users.id','branches.repository_id -> repositories.id','commits.branch_id -> branches.id','issues.repository_id -> repositories.id','stars.user_id -> users.id']},
+      {site:'Stack Overflow',page:'Detail Pertanyaan',level:'easy',color:'#f3a15c',goal:'Menghubungkan pertanyaan, jawaban, vote, komentar, tag, dan jawaban diterima.',front:['Judul dan isi pertanyaan','Tag dan vote','Daftar jawaban','Komentar dan jawaban diterima'],back:['Ambil pertanyaan dan jawaban','Hitung vote','Ambil komentar','Tandai jawaban diterima'],tables:['users','questions','answers','question_votes','answer_votes','comments','tags','question_tags','accepted_answers','bookmarks'],relations:['questions.user_id -> users.id','answers.question_id -> questions.id','question_votes.question_id -> questions.id','question_tags.tag_id -> tags.id','accepted_answers.answer_id -> answers.id']},
+      {site:'Wikipedia',page:'Detail Artikel',level:'easy',color:'#bdc4cc',goal:'Menganalisis artikel berversi dengan revisi, isi, kategori, media, tautan, dan referensi.',front:['Judul dan isi artikel','Daftar isi serta gambar','Referensi dan kategori','Riwayat perubahan'],back:['Ambil revisi terbaru','Susun daftar isi','Ambil media dan referensi','Simpan revisi penyuntingan'],tables:['users','pages','page_revisions','page_contents','categories','page_categories','media_files','page_links','references','edit_logs'],relations:['page_revisions.page_id -> pages.id','page_revisions.user_id -> users.id','page_contents.revision_id -> page_revisions.id','page_categories.category_id -> categories.id','references.page_id -> pages.id']},
+      {site:'Medium',page:'Detail Artikel',level:'easy',color:'#8fd1b5',goal:'Menghubungkan artikel, penulis, isi, gambar, clap, komentar, follow, dan riwayat baca.',front:['Judul dan profil penulis','Isi serta gambar','Clap dan komentar','Follow dan bookmark'],back:['Ambil artikel dan penulis','Catat pembacaan','Simpan clap atau bookmark','Ambil komentar'],tables:['users','profiles','articles','article_contents','article_images','article_claps','comments','followers','bookmarks','reading_histories','tags','article_tags'],relations:['profiles.user_id -> users.id','articles.user_id -> users.id','article_contents.article_id -> articles.id','article_claps.article_id -> articles.id','article_tags.tag_id -> tags.id']},
+      {site:'Reddit',page:'Detail Postingan',level:'easy',color:'#ff875e',goal:'Memodelkan komunitas, anggota, post, vote, komentar bertingkat, laporan, dan moderator.',front:['Nama komunitas dan post','Profil pembuat','Upvote atau downvote','Komentar bertingkat'],back:['Cek keanggotaan komunitas','Ambil post dan vote','Bangun pohon komentar','Simpan bookmark atau laporan'],tables:['users','communities','community_members','posts','post_votes','comments','comment_votes','saved_posts','reports','moderators'],relations:['community_members.community_id -> communities.id','posts.user_id -> users.id','posts.community_id -> communities.id','comments.parent_comment_id -> comments.id','post_votes.post_id -> posts.id']},
+      {site:'Coursera',page:'Detail Kursus',level:'easy',color:'#7b9ff5',goal:'Menganalisis kursus, instruktur, modul, pelajaran, pendaftaran, progres, ulasan, dan sertifikat.',front:['Nama kursus dan instruktur','Deskripsi serta silabus','Rating dan jadwal','Tombol daftar'],back:['Ambil kursus dan silabus','Cek status pendaftaran','Ambil rating','Daftarkan siswa'],tables:['users','instructors','courses','course_instructors','course_modules','lessons','course_enrollments','student_progress','course_reviews','certificates'],relations:['course_instructors.course_id -> courses.id','course_modules.course_id -> courses.id','lessons.module_id -> course_modules.id','course_enrollments.user_id -> users.id','student_progress.enrollment_id -> course_enrollments.id']},
+      {site:'Trello',page:'Halaman Board',level:'medium',color:'#78b8e8',goal:'Memodelkan workspace, board, list, card, anggota, label, checklist, urutan, dan aktivitas.',front:['Daftar atau kolom','Kartu tugas','Label, anggota, dan deadline','Drag-and-drop'],back:['Ambil struktur board','Perbarui urutan kartu','Simpan anggota dan label','Catat aktivitas perubahan'],tables:['users','workspaces','workspace_members','boards','board_members','lists','cards','card_members','labels','card_labels','checklists','checklist_items','activity_logs'],relations:['boards.workspace_id -> workspaces.id','lists.board_id -> boards.id','cards.list_id -> lists.id','card_labels.card_id -> cards.id','checklist_items.checklist_id -> checklists.id']},
+      {site:'Google Classroom',page:'Detail Tugas',level:'medium',color:'#79c995',goal:'Menghubungkan kelas, anggota, tugas, lampiran, pengumpulan, file, nilai, dan komentar pribadi.',front:['Judul dan instruksi','Deadline dan lampiran','Status pengumpulan','Nilai dan komentar pribadi'],back:['Cek keanggotaan kelas','Ambil tugas dan lampiran','Simpan pengumpulan','Berikan nilai dan komentar'],tables:['users','classes','class_members','assignments','assignment_attachments','submissions','submission_files','grades','private_comments','announcements'],relations:['class_members.class_id -> classes.id','assignments.class_id -> classes.id','assignment_attachments.assignment_id -> assignments.id','submissions.assignment_id -> assignments.id','grades.submission_id -> submissions.id']}
+    ];
+
+    const list = document.getElementById('caseList');
+    const searchInput = document.getElementById('searchInput');
+    const emptyState = document.getElementById('emptyState');
+    const filterButtons = [...document.querySelectorAll('.filter')];
+    let activeLevel = 'all';
+
+    const escapeText = value => String(value).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+
+    function render() {
+      list.innerHTML = studies.map((study, index) => {
+        const searchText = [study.site, study.page, study.goal, ...study.front, ...study.back, ...study.tables, ...study.relations].join(' ').toLowerCase();
+        return `<details class="case" data-level="${study.level}" data-search="${escapeText(searchText)}" style="--accent:${study.color}">
+          <summary>
+            <span class="case-number">${String(index + 1).padStart(2,'0')}</span>
+            <span><h3 class="case-site">${study.site}</h3><p class="case-page">${study.page}</p></span>
+            <span class="case-summary-right"><span class="level ${study.level}">${study.level === 'easy' ? 'Mudah' : 'Menengah'}</span><span class="table-count">${study.tables.length} kandidat tabel</span><span class="chevron">+</span></span>
+          </summary>
+          <div class="case-body">
+            <div class="case-goal"><strong>Fokus analisis:</strong> ${study.goal}</div>
+            <div class="layer-grid">
+              <section class="layer frontend"><h4>01 — Frontend diamati</h4><ul>${study.front.map(item => `<li>${item}</li>`).join('')}</ul></section>
+              <section class="layer backend"><h4>02 — Backend diperkirakan</h4><ul>${study.back.map(item => `<li>${item}</li>`).join('')}</ul></section>
+            </div>
+            <section class="db-section"><h4>03 — Kandidat tabel</h4><div class="table-cloud">${study.tables.map((table, i) => `<span class="table-chip ${i < 5 ? 'core' : ''}">${table}</span>`).join('')}</div></section>
+            <section class="relation-section"><h4>04 — Relasi awal untuk ERD</h4><div class="relations">${study.relations.map(item => `<div class="relation">${item}</div>`).join('')}</div></section>
+            <div class="case-actions">
+              <label class="complete"><input type="checkbox" class="case-check" data-id="${index + 1}"> Sudah ditinjau</label>
+              <button class="copy-case" type="button" data-index="${index}">Salin ringkasan kasus</button>
+            </div>
+          </div>
+        </details>`;
+      }).join('');
+      restoreProgress();
+    }
+
+    function filterCases() {
+      const query = searchInput.value.trim().toLowerCase();
+      let visible = 0;
+      document.querySelectorAll('.case').forEach(card => {
+        const levelMatch = activeLevel === 'all' || card.dataset.level === activeLevel;
+        const textMatch = !query || card.dataset.search.includes(query);
+        const show = levelMatch && textMatch;
+        card.classList.toggle('hidden', !show);
+        if (show) visible++;
+      });
+      emptyState.classList.toggle('show', visible === 0);
+    }
+
+    filterButtons.forEach(button => button.addEventListener('click', () => {
+      filterButtons.forEach(item => item.classList.remove('active'));
+      button.classList.add('active');
+      activeLevel = button.dataset.level;
+      filterCases();
+    }));
+    searchInput.addEventListener('input', filterCases);
+
+    function savedProgress() {
+      try { return JSON.parse(localStorage.getItem('case-study-progress') || '[]'); }
+      catch { return []; }
+    }
+    function restoreProgress() {
+      const saved = savedProgress();
+      document.querySelectorAll('.case-check').forEach(box => box.checked = saved.includes(Number(box.dataset.id)));
+      updateProgress();
+    }
+    function updateProgress() {
+      const ids = [...document.querySelectorAll('.case-check:checked')].map(box => Number(box.dataset.id));
+      localStorage.setItem('case-study-progress', JSON.stringify(ids));
+      document.getElementById('progressFill').style.width = `${ids.length / studies.length * 100}%`;
+      document.getElementById('progressText').textContent = `${ids.length} / ${studies.length}`;
+    }
+    document.addEventListener('change', event => {
+      if (event.target.matches('.case-check')) updateProgress();
+    });
+
+    document.addEventListener('click', async event => {
+      const button = event.target.closest('.copy-case');
+      if (!button) return;
+      const study = studies[Number(button.dataset.index)];
+      const text = `${study.site} — ${study.page}\n\nFrontend:\n- ${study.front.join('\n- ')}\n\nBackend:\n- ${study.back.join('\n- ')}\n\nTabel:\n- ${study.tables.join('\n- ')}\n\nRelasi:\n- ${study.relations.join('\n- ')}`;
+      try {
+        await navigator.clipboard.writeText(text);
+        const old = button.textContent;
+        button.textContent = 'Ringkasan tersalin';
+        setTimeout(() => button.textContent = old, 1400);
+      } catch { button.textContent = 'Tidak dapat menyalin'; }
+    });
+
+    const toTop = document.getElementById('toTop');
+    window.addEventListener('scroll', () => toTop.classList.toggle('show', scrollY > 700));
+    toTop.addEventListener('click', () => scrollTo({top:0, behavior:'smooth'}));
+
+    render();
+  </script>
+</body>
+</html>
